@@ -77,6 +77,15 @@ private fun StoreIdentifiers.toJson(): ReadableMap {
             }
             map.putArray("stripeSubscriptionIds", subscriptionIdsArray)
         }
+        is StoreIdentifiers.Paddle -> {
+            map.putString("store", "PADDLE")
+            map.putString("paddleCustomerId", this.paddleCustomerId)
+            val subscriptionIdsArray = Arguments.createArray()
+            this.paddleSubscriptionIds.forEach { id ->
+                subscriptionIdsArray.pushString(id)
+            }
+            map.putArray("paddleSubscriptionIds", subscriptionIdsArray)
+        }
         is StoreIdentifiers.Unknown -> {
             map.putString("store", "UNKNOWN")
         }

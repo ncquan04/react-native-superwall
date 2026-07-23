@@ -2,12 +2,12 @@ package com.superwallreactnative.models
 
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
-import com.superwall.sdk.store.abstractions.product.StoreProduct
+import com.superwall.sdk.store.abstractions.product.StoreProductType
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-fun StoreProduct.toJson(): ReadableMap {
+fun StoreProductType.toJson(): ReadableMap {
   val map = Arguments.createMap()
   val dateFormatter = DateTimeFormatter.ISO_DATE_TIME.withLocale(Locale.getDefault())
 

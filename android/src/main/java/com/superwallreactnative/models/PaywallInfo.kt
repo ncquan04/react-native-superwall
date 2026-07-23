@@ -92,7 +92,7 @@ fun PaywallInfo.toJson(): ReadableMap {
   val localNotificationsArray = Arguments.createArray()
   this.localNotifications.forEach { notification ->
     val notificationsMap = Arguments.createMap()
-    notificationsMap.putInt("id", notification.id)
+    notificationsMap.putString("id", notification.id)
     notificationsMap.putString("title", notification.title)
     notificationsMap.putString("body", notification.body)
     notificationsMap.putString("type", notification.type.toJson())

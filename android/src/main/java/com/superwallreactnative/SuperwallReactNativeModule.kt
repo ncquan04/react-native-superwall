@@ -69,8 +69,13 @@ class SuperwallReactNativeModule(private val reactContext: ReactApplicationConte
         options = options,
         activityProvider = activityProvider,
         purchaseController = purchaseController,
-        completion = {
-          completion.resolve(null)
+        completion = { result ->
+          result.fold(
+            onSuccess = { completion.resolve(null) },
+            onFailure = {
+              completion.reject("SUPERWALL_CONFIGURE_FAILED", it.message ?: "Superwall configure failed", it)
+            }
+          )
         }
       )
     } else  {
@@ -79,8 +84,13 @@ class SuperwallReactNativeModule(private val reactContext: ReactApplicationConte
         apiKey = apiKey,
         options = options,
         activityProvider = activityProvider,
-        completion = {
-          completion.resolve(null)
+        completion = { result ->
+          result.fold(
+            onSuccess = { completion.resolve(null) },
+            onFailure = {
+              completion.reject("SUPERWALL_CONFIGURE_FAILED", it.message ?: "Superwall configure failed", it)
+            }
+          )
         }
       )
     }

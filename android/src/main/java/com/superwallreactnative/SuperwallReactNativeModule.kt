@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import com.superwall.sdk.config.models.ConfigurationStatus
 import com.superwall.sdk.logger.LogLevel
+import java.util.concurrent.atomic.AtomicBoolean
 
 class SuperwallReactNativeModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -62,47 +63,63 @@ class SuperwallReactNativeModule(private val reactContext: ReactApplicationConte
       SuperwallOptions.fromJson(options)
     }
 
-    if (usingPurchaseController) {
-      Superwall.configure(
-        applicationContext = reactContext.applicationContext as Application,
-        apiKey = apiKey,
-        options = options,
-        activityProvider = activityProvider,
-        purchaseController = purchaseController,
-        completion = { result ->
-          result.fold(
-            onSuccess = { completion.resolve(null) },
-            onFailure = {
-              completion.reject("SUPERWALL_CONFIGURE_FAILED", it.message ?: "Superwall configure failed", it)
-            }
+    // Settle the JS promise exactly once, whether from the async completion
+    // or the synchronous catch below.
+    val promiseSettled = AtomicBoolean(false)
+    val completionHandler: (Result<Unit>) -> Unit = { result ->
+      result.fold(
+        onSuccess = {
+          // Only touch the instance after setup succeeded — on failure the
+          // dependency container is uninitialized and any access throws.
+          Superwall.instance.setPlatformWrapper(
+            "React Native",
+            version = sdkVersion
           )
-        }
-      )
-    } else  {
-      Superwall.configure(
-        applicationContext = reactContext.applicationContext as Application,
-        apiKey = apiKey,
-        options = options,
-        activityProvider = activityProvider,
-        completion = { result ->
-          result.fold(
-            onSuccess = { completion.resolve(null) },
-            onFailure = {
-              completion.reject("SUPERWALL_CONFIGURE_FAILED", it.message ?: "Superwall configure failed", it)
-            }
-          )
+          if (promiseSettled.compareAndSet(false, true)) {
+            completion.resolve(null)
+          }
+        },
+        onFailure = {
+          if (promiseSettled.compareAndSet(false, true)) {
+            completion.reject("SUPERWALL_CONFIGURE_FAILED", it.message ?: "Superwall configure failed", it)
+          }
         }
       )
     }
 
-    Superwall.instance.setPlatformWrapper(
-      "React Native",
-      version = sdkVersion
-    );
+    try {
+      if (usingPurchaseController) {
+        Superwall.configure(
+          applicationContext = reactContext.applicationContext as Application,
+          apiKey = apiKey,
+          options = options,
+          activityProvider = activityProvider,
+          purchaseController = purchaseController,
+          completion = completionHandler
+        )
+      } else  {
+        Superwall.configure(
+          applicationContext = reactContext.applicationContext as Application,
+          apiKey = apiKey,
+          options = options,
+          activityProvider = activityProvider,
+          completion = completionHandler
+        )
+      }
+    } catch (t: Throwable) {
+      if (promiseSettled.compareAndSet(false, true)) {
+        completion.reject("SUPERWALL_CONFIGURE_FAILED", t.message ?: "Superwall configure failed", t)
+      }
+    }
   }
 
   @ReactMethod
   fun setDelegate(isUndefined: Boolean) {
+    // Guard against calls before configure completed — Superwall.instance
+    // access would throw lateinit _dependencyContainer otherwise.
+    if (!Superwall.initialized) {
+      return
+    }
     this.delegate = if (isUndefined) null else SuperwallDelegateBridge(reactContext)
     Superwall.instance.delegate = this.delegate
   }

@@ -1,32 +1,40 @@
-import type { Entitlement } from './Entitlement';
-import { SubscriptionStatus } from './SubscriptionStatus';
-import { PaywallInfo } from "./PaywallInfo";
+import type { Entitlement } from "./Entitlement"
+import { PaywallInfo } from "./PaywallInfo"
 import {
   PaywallPresentationRequestStatus,
   PaywallPresentationRequestStatusReason,
-} from './PaywallPresentationRequestStatus';
-import { RestoreType } from "./RestoreType";
-import { StoreProduct } from "./StoreProduct";
-import { StoreTransaction } from "./StoreTransaction";
-import { Survey, SurveyOption } from "./Survey";
-import { TriggerResult } from "./TriggerResult";
+} from "./PaywallPresentationRequestStatus"
+import type { RestoreType } from "./RestoreType"
+import { StoreProduct } from "./StoreProduct"
+import { StoreTransaction } from "./StoreTransaction"
+import type { SubscriptionStatus } from "./SubscriptionStatus"
+import { Survey, SurveyOption } from "./Survey"
+import { TriggerResult } from "./TriggerResult"
+
+/**
+ * @category Events
+ * @since 0.0.15
+ * Contains information about a Superwall event.
+ */
 export class SuperwallEventInfo {
-  event: SuperwallEvent;
-  params?: Record<string, any>;
+  event: SuperwallEvent
+  params?: Record<string, any>
 
   constructor(event: SuperwallEvent, params?: Record<string, any>) {
-    this.event = event;
-    this.params = params;
+    this.event = event
+    this.params = params
   }
 
   static fromJson(json: any): SuperwallEventInfo {
-    return new SuperwallEventInfo(
-      SuperwallEvent.fromJson(json.event),
-      json.params
-    );
+    return new SuperwallEventInfo(SuperwallEvent.fromJson(json.event), json.params)
   }
 }
 
+/**
+ * @category Enums
+ * @since 0.0.15
+ * Enum representing the types of Superwall events.
+ */
 export enum EventType {
   firstSeen = "firstSeen",
   configRefresh = "configRefresh",
@@ -65,6 +73,10 @@ export enum EventType {
   paywallProductsLoadStart = "paywallProductsLoadStart",
   paywallProductsLoadFail = "paywallProductsLoadFail",
   paywallProductsLoadComplete = "paywallProductsLoadComplete",
+  paywallWebviewProcessTerminated = "paywallWebviewProcessTerminated",
+  paywallProductsLoadMissingProducts = "paywallProductsLoadMissingProducts",
+  paywallPreloadStart = "paywallPreloadStart",
+  paywallPreloadComplete = "paywallPreloadComplete",
   paywallProductsLoadRetry = "paywallProductsLoadRetry",
   surveyResponse = "surveyResponse",
   paywallPresentationRequest = "paywallPresentationRequest",
@@ -90,60 +102,115 @@ export enum EventType {
   enrichmentStart = "enrichmentStart",
   enrichmentComplete = "enrichmentComplete",
   enrichmentFail = "enrichmentFail",
-  networkDecodingFail = "networkDecodingFail"
+  integrationAttributes = "integrationAttributes",
+  expressionResult = "expressionResult",
+  reviewRequested = "reviewRequested",
+  reviewGranted = "reviewGranted", 
+  reviewDenied = "reviewDenied",
+  paywallResourceLoadFail = "paywallResourceLoadFail",
+  networkDecodingFail = "networkDecodingFail",
+  handleLog = "handleLog",
+  testModeModalOpen = "testModeModalOpen",
+  testModeModalClose = "testModeModalClose",
+  stripeCheckoutStart = "stripeCheckoutStart",
+  stripeCheckoutSubmit = "stripeCheckoutSubmit",
+  stripeCheckoutComplete = "stripeCheckoutComplete",
+  stripeCheckoutFail = "stripeCheckoutFail",
+  paywallPageView = "paywallPageView",
 }
 
+/**
+ * @category Models
+ * Page-specific details for a multi-page paywall page view.
+ */
+export interface PageViewData {
+  pageNodeId: string
+  flowPosition: number
+  pageName: string
+  navigationNodeId: string
+  previousPageNodeId?: string
+  previousFlowPosition?: number
+  /** `"entry"` | `"forward"` | `"back"` | `"auto_transition"` */
+  navigationType: string
+  timeOnPreviousPageMs?: number
+}
+
+/**
+ * @category Events
+ * @since 0.0.15
+ * Represents a Superwall event with its associated data.
+ */
 export class SuperwallEvent {
-  type: EventType | undefined;
-  placementName?: string;
-  deviceAttributes?: Record<string, any>;
-  deepLinkUrl?: string;
-  result?: TriggerResult;
-  paywallInfo?: PaywallInfo;
-  transaction?: StoreTransaction;
-  product?: StoreProduct;
-  error?: string;
-  message?: string;
-  triggeredEventName?: string;
-  survey?: Survey;
-  selectedOption?: SurveyOption;
-  customResponse?: string;
-  status?: PaywallPresentationRequestStatus;
-  reason?: PaywallPresentationRequestStatusReason;
-  restoreType?: RestoreType;
-  userAttributes?: Record<string, any>;
+  type: EventType | undefined
+  placementName?: string
+  deviceAttributes?: Record<string, any>
+  deepLinkUrl?: string
+  result?: TriggerResult
+  paywallInfo?: PaywallInfo
+  transaction?: StoreTransaction
+  product?: StoreProduct
+  error?: string
+  message?: string
+  triggeredEventName?: string
+  survey?: Survey
+  selectedOption?: SurveyOption
+  customResponse?: string
+  status?: PaywallPresentationRequestStatus
+  reason?: PaywallPresentationRequestStatusReason
+  restoreType?: RestoreType
+  userAttributes?: Record<string, any>
+  audienceFilterParams?: Record<string, any>
+  identifiers?: string[]
+  paywallCount?: number
+  count?: number
+  duration?: number
+  url?: string
+  errorMessage?: string
+  userEnrichment?: Record<string, any>
+  deviceEnrichment?: Record<string, any>
+  pageViewData?: PageViewData
 
   private constructor(options: {
-    type: EventType;
-    placementName?: string;
-    deviceAttributes?: Record<string, any>;
-    deepLinkUrl?: string;
-    result?: TriggerResult;
-    paywallInfo?: PaywallInfo;
-    transaction?: StoreTransaction;
-    product?: StoreProduct;
-    error?: string;
-    message?: string;
-    triggeredEventName?: string;
-    survey?: Survey;
-    selectedOption?: SurveyOption;
-    customResponse?: string;
-    status?: PaywallPresentationRequestStatus;
-    reason?: PaywallPresentationRequestStatusReason;
-    restoreType?: RestoreType;
-    userAttributes?: Record<string, any>;
-    attempt?: number;
-    name?: string;
-    params?: Record<string, any>;
-    token?: string;
-    from?: { status: SubscriptionStatus; entitlements: Entitlement[] };
-    to?: { status: SubscriptionStatus; entitlements: Entitlement[] };
+    type: EventType
+    placementName?: string
+    deviceAttributes?: Record<string, any>
+    deepLinkUrl?: string
+    result?: TriggerResult
+    paywallInfo?: PaywallInfo
+    transaction?: StoreTransaction
+    product?: StoreProduct
+    error?: string
+    message?: string
+    triggeredEventName?: string
+    survey?: Survey
+    selectedOption?: SurveyOption
+    customResponse?: string
+    status?: PaywallPresentationRequestStatus
+    reason?: PaywallPresentationRequestStatusReason
+    restoreType?: RestoreType
+    userAttributes?: Record<string, any>
+    attempt?: number
+    name?: string
+    params?: Record<string, any>
+    token?: string
+    from?: { status: SubscriptionStatus; entitlements: Entitlement[] }
+    to?: { status: SubscriptionStatus; entitlements: Entitlement[] }
+    audienceFilterParams?: Record<string, any>
+    identifiers?: string[]
+    paywallCount?: number
+    count?: number
+    duration?: number
+    url?: string
+    errorMessage?: string
+    userEnrichment?: Record<string, any>
+    deviceEnrichment?: Record<string, any>
+    pageViewData?: PageViewData
   }) {
-    Object.assign(this, options);
+    Object.assign(this, options)
   }
 
   static fromJson(json: any): SuperwallEvent {
-    let eventType = EventType[json.event as keyof typeof EventType];
+    const eventType = EventType[json.event as keyof typeof EventType]
 
     // Example for one case, replicate logic for other cases as needed
     switch (eventType) {
@@ -166,45 +233,71 @@ export class SuperwallEvent {
       case EventType.errorThrown:
       case EventType.confirmAllAssignments:
       case EventType.shimmerViewStart:
-      case EventType.shimmerViewComplete:
       case EventType.subscriptionStatusDidChange:
       case EventType.enrichmentFail:
       case EventType.networkDecodingFail:
-        return new SuperwallEvent({ type: eventType });
+      case EventType.expressionResult:
+      case EventType.testModeModalOpen:
+      case EventType.testModeModalClose:
+        return new SuperwallEvent({ type: eventType })
+      case EventType.shimmerViewComplete:
+        return new SuperwallEvent({
+          type: eventType,
+          duration: json.duration,
+        })
       case EventType.restoreFail:
         return new SuperwallEvent({
           type: eventType,
           message: json.message,
-        });
+        })
       case EventType.deviceAttributes:
         return new SuperwallEvent({
           type: eventType,
           deviceAttributes: json.attributes,
-        });
+        })
       case EventType.deepLink:
         return new SuperwallEvent({
           type: eventType,
           deepLinkUrl: json.url,
-        });
+        })
       case EventType.triggerFire:
         return new SuperwallEvent({
           type: eventType,
-          placementName: eventType,
+          placementName: eventType, // TODO: This seems incorrect, should be json.eventName or similar
           result: TriggerResult.fromJson(json.result),
-        });
+        })
       case EventType.paywallOpen:
       case EventType.paywallClose:
       case EventType.paywallDecline:
-      case EventType.transactionRestore:
+      case EventType.transactionRestore: // Note: transactionRestore was duplicated, keeping one
       case EventType.paywallWebviewLoadStart:
-      case EventType.paywallWebviewLoadFail:
       case EventType.paywallWebviewLoadComplete:
       case EventType.paywallWebviewLoadTimeout:
       case EventType.paywallWebviewLoadFallback:
+      case EventType.paywallWebviewProcessTerminated:
         return new SuperwallEvent({
           type: eventType,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
+      case EventType.paywallProductsLoadMissingProducts:
+        return new SuperwallEvent({
+          type: eventType,
+          triggeredEventName: json.triggeredEventName,
+          paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
+          identifiers: json.identifiers,
+        })
+      case EventType.paywallPreloadStart:
+      case EventType.paywallPreloadComplete:
+        return new SuperwallEvent({
+          type: eventType,
+          paywallCount: json.paywallCount,
+        })
+      case EventType.paywallWebviewLoadFail:
+        return new SuperwallEvent({
+          type: eventType,
+          paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
+          errorMessage: json.errorMessage,
+        })
       case EventType.transactionStart:
       case EventType.transactionAbandon:
       case EventType.subscriptionStart:
@@ -214,55 +307,58 @@ export class SuperwallEvent {
           type: eventType,
           product: StoreProduct.fromJson(json.product),
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
       case EventType.transactionFail:
         return new SuperwallEvent({
           type: eventType,
           error: json.error,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
       case EventType.transactionComplete:
         return new SuperwallEvent({
           type: eventType,
-          transaction: json.transaction
-            ? StoreTransaction.fromJson(json.transaction)
-            : undefined,
+          transaction: json.transaction ? StoreTransaction.fromJson(json.transaction) : undefined,
           product: StoreProduct.fromJson(json.product),
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
-      case EventType.transactionRestore:
-        return new SuperwallEvent({
-          type: eventType,
-          restoreType: RestoreType.fromJson(json.restoreType),
-          paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
+      // case EventType.transactionRestore: // Already handled above
+      //   return new SuperwallEvent({
+      //     type: eventType,
+      //     restoreType: RestoreType.fromJson(json.restoreType),
+      //     paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
+      //   });
       case EventType.userAttributes:
         return new SuperwallEvent({
           type: eventType,
           userAttributes: json.attributes,
-        });
+        })
       case EventType.paywallResponseLoadStart:
       case EventType.paywallResponseLoadNotFound:
       case EventType.paywallResponseLoadFail:
         return new SuperwallEvent({
           type: eventType,
           triggeredEventName: json.triggeredEventName,
-        });
+        })
       case EventType.paywallResponseLoadComplete:
       case EventType.paywallProductsLoadStart:
-      case EventType.paywallProductsLoadFail:
       case EventType.paywallProductsLoadComplete:
         return new SuperwallEvent({
           type: eventType,
+          triggeredEventName: json.triggeredEventName, // Assuming this should be based on json.paywallInfo or similar
+        })
+      case EventType.paywallProductsLoadFail:
+        return new SuperwallEvent({
+          type: eventType,
           triggeredEventName: json.triggeredEventName,
-        });
+          errorMessage: json.errorMessage,
+        })
       case EventType.paywallProductsLoadRetry:
         return new SuperwallEvent({
           type: eventType,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
           triggeredEventName: json.triggeredEventName,
           attempt: json.attempt,
-        });
+        })
       case EventType.surveyResponse:
         return new SuperwallEvent({
           type: eventType,
@@ -270,7 +366,7 @@ export class SuperwallEvent {
           selectedOption: SurveyOption.fromJson(json.selectedOption),
           customResponse: json.customResponse,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
       case EventType.paywallPresentationRequest:
         return new SuperwallEvent({
           type: eventType,
@@ -278,52 +374,97 @@ export class SuperwallEvent {
           reason: json.reason
             ? PaywallPresentationRequestStatusReason.fromJson(json.reason)
             : undefined,
-        });
+        })
       case EventType.customPlacement:
         return new SuperwallEvent({
           type: eventType,
           name: json.name,
           params: json.params,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
+        })
       case EventType.adServicesTokenRequestFail:
         return new SuperwallEvent({
           type: eventType,
           error: json.error,
-        });
+        })
       case EventType.adServicesTokenRequestComplete:
         return new SuperwallEvent({
           type: eventType,
           token: json.token,
-        });
+        })
       case EventType.transactionTimeout:
         return new SuperwallEvent({
           type: eventType,
           paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
-        });
-      case EventType.shimmerViewComplete:
-        return new SuperwallEvent({ type: eventType });
+        })
+      // case EventType.shimmerViewComplete: // Already handled
+      //   return new SuperwallEvent({ type: eventType });
       case EventType.redemptionStart:
-        return new SuperwallEvent({ type: eventType });
+        return new SuperwallEvent({ type: eventType })
       case EventType.redemptionComplete:
-        return new SuperwallEvent({ type: eventType });
+        return new SuperwallEvent({ type: eventType }) // Potentially add redemption info
       case EventType.redemptionFail:
-        return new SuperwallEvent({ type: eventType });
+        return new SuperwallEvent({ type: eventType }) // Potentially add error info
       case EventType.enrichmentStart:
-        return new SuperwallEvent({ type: eventType });
+        return new SuperwallEvent({ type: eventType })
+      case EventType.handleLog: // Consider adding log parameters
+        return new SuperwallEvent({ type: eventType })
       case EventType.enrichmentComplete:
         return new SuperwallEvent({
           type: eventType,
-          userAttributes: json.userEnrichment,
-          deviceAttributes: json.deviceEnrichment,
-        });
-      // Further cases would follow a similar pattern, handling additional properties as needed
-      // For complex nested objects like 'result', 'paywallInfo', etc., you would use the corresponding fromJson methods
+          userEnrichment: json.userEnrichment,
+          deviceEnrichment: json.deviceEnrichment,
+        })
+      case EventType.integrationAttributes:
+        return new SuperwallEvent({
+          type: eventType,
+          audienceFilterParams: json.audienceFilterParams,
+        })
+      case EventType.reviewRequested:
+      case EventType.reviewGranted:
+      case EventType.reviewDenied:
+        return new SuperwallEvent({
+          type: eventType,
+          count: json.count,
+        })
+      case EventType.paywallResourceLoadFail:
+        return new SuperwallEvent({
+          type: eventType,
+          url: json.url,
+          error: json.error,
+        })
+      case EventType.stripeCheckoutStart:
+      case EventType.stripeCheckoutSubmit:
+      case EventType.stripeCheckoutComplete:
+      case EventType.stripeCheckoutFail:
+        return new SuperwallEvent({
+          type: eventType,
+          paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
+        })
+      case EventType.paywallPageView:
+        return new SuperwallEvent({
+          type: eventType,
+          paywallInfo: PaywallInfo.fromJson(json.paywallInfo),
+          pageViewData: json.data,
+        })
       default:
-        throw new Error('Invalid event type');
+        console.warn(`[Superwall] Unhandled event type in SuperwallEvent.fromJson: ${json.event}`)
+        return new SuperwallEvent({ type: eventType }) // Fallback for unhandled but known types
+      // For truly unknown types, an error might be more appropriate:
+      // throw new Error(`Invalid event type: ${json.event}`);
     }
   }
 }
 
-export type SuperwallPlacementInfo = SuperwallEventInfo;
-export type SuperwallPlacement = SuperwallEvent;
+/**
+ * @category Types
+ * @since 0.0.15
+ * Alias for SuperwallEventInfo, representing information about a Superwall placement.
+ */
+export type SuperwallPlacementInfo = SuperwallEventInfo
+/**
+ * @category Types
+ * @since 0.0.15
+ * Alias for SuperwallEvent, representing a Superwall placement event.
+ */
+export type SuperwallPlacement = SuperwallEvent

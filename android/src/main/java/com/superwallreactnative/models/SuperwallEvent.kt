@@ -4,6 +4,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.superwall.sdk.analytics.superwall.SuperwallEvent
+import com.superwall.sdk.paywall.view.webview.messaging.PageViewData
 import com.superwall.sdk.store.abstractions.transactions.StoreTransaction
 
 class SuperwallEvent {
@@ -203,15 +204,123 @@ class SuperwallEvent {
         }
         is SuperwallEvent.ShimmerViewComplete -> {
           map.putString("event", "shimmerViewComplete")
+          map.putDouble("duration", superwallPlacement.duration)
         }
         is SuperwallEvent.ShimmerViewStart -> {
           map.putString("event", "shimmerViewStart")
         }
-        else -> {}
+        is SuperwallEvent.EnrichmentStart -> {
+          map.putString("event", "enrichmentStart")
+        }
+        is SuperwallEvent.EnrichmentComplete -> {
+          map.putString("event", "enrichmentComplete")
+          map.putMap("userEnrichment", convertMapToReadableMap(superwallPlacement.userEnrichment))
+          map.putMap("deviceEnrichment", convertMapToReadableMap(superwallPlacement.deviceEnrichment))
+        }
+        is SuperwallEvent.EnrichmentFail -> {
+          map.putString("event", "enrichmentFail")
+        }
+        is SuperwallEvent.ErrorThrown -> {
+          map.putString("event", "errorThrown")
+        }
+        is SuperwallEvent.RedemptionStart -> {
+          map.putString("event", "redemptionStart")
+        }
+        is SuperwallEvent.RedemptionComplete -> {
+          map.putString("event", "redemptionComplete")
+        }
+        is SuperwallEvent.RedemptionFail -> {
+          map.putString("event", "redemptionFail")
+        }
+        is SuperwallEvent.PaywallPreloadStart -> {
+          map.putString("event", "paywallPreloadStart")
+          map.putInt("paywallCount", superwallPlacement.paywallCount)
+        }
+        is SuperwallEvent.PaywallPreloadComplete -> {
+          map.putString("event", "paywallPreloadComplete")
+          map.putInt("paywallCount", superwallPlacement.paywallCount)
+        }
+        is SuperwallEvent.IntegrationProps -> {
+          map.putString("event", "integrationAttributes")
+          map.putMap(
+            "audienceFilterParams",
+            convertMapToReadableMap(superwallPlacement.audienceFilterParams)
+          )
+        }
+        is SuperwallEvent.IntegrationAttributes -> {
+          map.putString("event", "integrationAttributes")
+          map.putMap(
+            "audienceFilterParams",
+            convertMapToReadableMap(superwallPlacement.audienceFilterParams)
+          )
+        }
+        is SuperwallEvent.ExpressionResult -> {
+          map.putString("event", "expressionResult")
+        }
+        is SuperwallEvent.ReviewRequested -> {
+          map.putString("event", "reviewRequested")
+          map.putInt("count", superwallPlacement.count)
+        }
+        is SuperwallEvent.ReviewGranted -> {
+          map.putString("event", "reviewGranted")
+          map.putInt("count", superwallPlacement.count)
+        }
+        is SuperwallEvent.ReviewDenied -> {
+          map.putString("event", "reviewDenied")
+          map.putInt("count", superwallPlacement.count)
+        }
+        is SuperwallEvent.CustomerInfoDidChange -> {
+          map.putString("event", "customerInfoDidChange")
+        }
+        is SuperwallEvent.PermissionRequested -> {
+          map.putString("event", "permissionRequested")
+          map.putString("permissionName", superwallPlacement.permissionName)
+          map.putString("paywallIdentifier", superwallPlacement.paywallIdentifier)
+        }
+        is SuperwallEvent.PermissionGranted -> {
+          map.putString("event", "permissionGranted")
+          map.putString("permissionName", superwallPlacement.permissionName)
+          map.putString("paywallIdentifier", superwallPlacement.paywallIdentifier)
+        }
+        is SuperwallEvent.PermissionDenied -> {
+          map.putString("event", "permissionDenied")
+          map.putString("permissionName", superwallPlacement.permissionName)
+          map.putString("paywallIdentifier", superwallPlacement.paywallIdentifier)
+        }
+        is SuperwallEvent.PaywallPageView -> {
+          map.putString("event", "paywallPageView")
+          map.putMap("paywallInfo", superwallPlacement.paywallInfo.toJson())
+          map.putMap("data", pageViewDataToJson(superwallPlacement.data))
+        }
+        is SuperwallEvent.TestModeModalOpen -> {
+          map.putString("event", "testModeModalOpen")
+        }
+        is SuperwallEvent.TestModeModalClose -> {
+          map.putString("event", "testModeModalClose")
+        }
+        // Backstop: SDK phát event mới nhanh hơn bridge này. Luôn phải có key
+        // "event" — bỏ trống thì SuperwallEvent.fromJson phía JS nhận undefined.
+        // rawName là snake_case nên JS rơi vào default (chỉ warn, không throw).
+        else -> map.putString("event", superwallPlacement.rawName)
       }
       return map
     }
   }
+}
+
+fun pageViewDataToJson(data: PageViewData): ReadableMap {
+  val map = Arguments.createMap()
+  map.putString("pageNodeId", data.pageNodeId)
+  map.putInt("flowPosition", data.flowPosition)
+  map.putString("pageName", data.pageName)
+  map.putString("navigationNodeId", data.navigationNodeId)
+  map.putString("previousPageNodeId", data.previousPageNodeId)
+  data.previousFlowPosition?.let { map.putInt("previousFlowPosition", it) }
+    ?: map.putNull("previousFlowPosition")
+  map.putString("navigationType", data.navigationType)
+  data.timeOnPreviousPageMs?.let { map.putInt("timeOnPreviousPageMs", it) }
+    ?: map.putNull("timeOnPreviousPageMs")
+  return map
 }
 
 fun convertMapToReadableMap(map: Map<String, Any?>): ReadableMap {

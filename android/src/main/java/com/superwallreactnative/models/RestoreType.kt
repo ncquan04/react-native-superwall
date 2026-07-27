@@ -9,7 +9,7 @@ fun RestoreType.toJson(): ReadableMap {
   when (this) {
     is RestoreType.ViaPurchase -> {
       map.putString("type", "viaPurchase")
-      map.putMap("type", transaction?.toJson())
+      map.putMap("transaction", transaction?.toJson())
     }
     is RestoreType.ViaRestore -> map.putString("type", "viaRestore")
   }

@@ -220,9 +220,9 @@ class SuperwallEvent {
         is SuperwallEvent.EnrichmentFail -> {
           map.putString("event", "enrichmentFail")
         }
-        is SuperwallEvent.ErrorThrown -> {
-          map.putString("event", "errorThrown")
-        }
+        // SuperwallEvent.ErrorThrown / ExpressionResult là `internal` trong SDK
+        // (đều implement IsInternalEvent) -> không tham chiếu được từ module này.
+        // Chúng rơi vào nhánh `else` bên dưới và gửi rawName.
         is SuperwallEvent.RedemptionStart -> {
           map.putString("event", "redemptionStart")
         }
@@ -253,9 +253,6 @@ class SuperwallEvent {
             "audienceFilterParams",
             convertMapToReadableMap(superwallPlacement.audienceFilterParams)
           )
-        }
-        is SuperwallEvent.ExpressionResult -> {
-          map.putString("event", "expressionResult")
         }
         is SuperwallEvent.ReviewRequested -> {
           map.putString("event", "reviewRequested")
